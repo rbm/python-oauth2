@@ -400,8 +400,17 @@ class Request(dict):
         # Include any query string parameters from the provided URL
         query = urlparse.urlparse(self.url)[4]
         
-        url_items = self._split_url_string(query).items()
-        non_oauth_url_items = list([(k, v) for k, v in url_items  if not k.startswith('oauth_')])
+        url_items = []
+        parameters = parse_qs(query, keep_blank_values=False)
+        for k, v in parameters.iteritems():
+            if hasattr(v, '__iter__'):
+                for vx in v:
+                    url_items.append((k, urllib.unquote(vx)))
+            else:
+                url_items.append((k, urllib.unquote(v[0])))
+
+        non_oauth_url_items = list([(k, v) for (k, v) in url_items if not k.startswith('oauth_')])
+
         items.extend(non_oauth_url_items)
 
         encoded_str = urllib.urlencode(sorted(items))

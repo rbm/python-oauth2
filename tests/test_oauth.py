@@ -1059,7 +1059,6 @@ class TestClient(unittest.TestCase):
             self.failUnlessEqual(frozenset(kw.keys()), frozenset(['method', 'body', 'redirections', 'connection_type', 'headers']))
             self.failUnlessEqual(kw['body'], body)
             self.failUnlessEqual(kw['connection_type'], None)
-            self.failUnlessEqual(kw['method'], 'POST')
             self.failUnlessEqual(kw['redirections'], httplib2.DEFAULT_MAX_REDIRECTS)
             self.failUnless(isinstance(kw['headers'], dict))
             query = parse_qs(query_str)
@@ -1067,6 +1066,7 @@ class TestClient(unittest.TestCase):
             return random_result
 
         client.request(uri, 'POST', body=body)
+        client.request(uri, 'GET', body=body)
 
 if __name__ == "__main__":
     unittest.main()
