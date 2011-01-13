@@ -1046,6 +1046,28 @@ class TestClient(unittest.TestCase):
 
         client.request(uri, 'GET')
 
+    @mock.patch('httplib2.Http.request')
+    def test_multiple_values_for_a_key(self, mockHttpRequest):
+        client = oauth.Client(self.consumer, None)
+        uri = self._uri('two_legged')
+        body = 'multi=1&multi=2'
+        random_result = random.randint(1,100)
+
+        def mockrequest(cl, ur, **kw):
+            self.failUnless(cl is client)
+            self.failUnless(ur is uri)
+            self.failUnlessEqual(frozenset(kw.keys()), frozenset(['method', 'body', 'redirections', 'connection_type', 'headers']))
+            self.failUnlessEqual(kw['body'], body)
+            self.failUnlessEqual(kw['connection_type'], None)
+            self.failUnlessEqual(kw['method'], 'POST')
+            self.failUnlessEqual(kw['redirections'], httplib2.DEFAULT_MAX_REDIRECTS)
+            self.failUnless(isinstance(kw['headers'], dict))
+            query = parse_qs(query_str)
+            self.failUnlessEqual(query['multi'], ['1', '2'])
+            return random_result
+
+        client.request(uri, 'POST', body=body)
+
 if __name__ == "__main__":
     unittest.main()
 
